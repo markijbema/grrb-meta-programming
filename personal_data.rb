@@ -6,21 +6,7 @@ class PersonalData
     @email = email
   end
 
-  def name
-    @name
-  end
-  def name= name
-    @name = name
-  end
-
-  def email
-    @email
-  end
-  def email= email
-    @email = email
-  end
-
-
+  attr_accessor :name, :email
 end
 
 describe PersonalData do
