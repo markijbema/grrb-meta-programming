@@ -16,11 +16,16 @@ module Attributes
   end
 
   def memoize *methods
+    prepend Memoized(*methods)
+  end
+end
+
+def Memoized *methods
+  Module.new do
     methods.each do |method|
       module_eval <<-end_of_defs
-        alias unmemoized_#{method} #{method}
         def #{method}
-          @_memoized_value_for_#{method} ||= unmemoized_#{method}
+          @_memoized_value_for_#{method} ||= super
         end
       end_of_defs
     end
@@ -94,5 +99,13 @@ describe PersonalData do
 
     expect(data.email_link).to eq "<a href=\"mailto:markijbema@gmail.com\">Mark</a>"
     expect(data.email_link).to eq "<a href=\"mailto:markijbema@gmail.com\">Mark</a>"
+  end
+
+  it 'does not contain more methods than needed' do
+    data = PersonalData.new "Mark", "markijbema@gmail.com"
+
+    specific_methods = data.methods - Object.new.methods
+    expect(specific_methods).to match_array  [:name, :name=, :email, :email=, :gravatar_url, :email_link]
+
   end
 end
