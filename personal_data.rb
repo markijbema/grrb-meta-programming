@@ -1,12 +1,29 @@
 require 'rspec/autorun'
 
+module Attributes
+  def attribute *attributes
+    attributes.each do | attribute |
+      module_eval <<-end_of_defs
+        def #{attribute}
+          @#{attribute}
+        end
+        def #{attribute}= val
+          @#{attribute} = val
+        end
+      end_of_defs
+    end
+  end
+end
+
 class PersonalData
+  extend Attributes
+
   def initialize name, email
     @name = name
     @email = email
   end
 
-  attr_accessor :name, :email
+  attribute :name, :email
 end
 
 describe PersonalData do
