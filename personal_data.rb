@@ -14,6 +14,17 @@ module Attributes
       end_of_defs
     end
   end
+
+  def memoize *methods
+    methods.each do |method|
+      module_eval <<-end_of_defs
+        alias unmemoized_#{method} #{method}
+        def #{method}
+          @_memoized_value_for_#{method} ||= unmemoized_#{method}
+        end
+      end_of_defs
+    end
+  end
 end
 
 class PersonalData
@@ -27,15 +38,15 @@ class PersonalData
   attribute :name, :email
 
   def gravatar_url
-    @gravatar_url ||= begin
-      gravatar_hash = Digest::MD5.hexdigest(email)
-      "http://www.gravatar.com/avatar.php?gravatar_id=#{gravatar_hash}"
-    end
+    gravatar_hash = Digest::MD5.hexdigest(email)
+    "http://www.gravatar.com/avatar.php?gravatar_id=#{gravatar_hash}"
   end
 
   def email_link
-    @email_link ||= "<a href=\"mailto:#{email}\">#{name}</a>"
+    "<a href=\"mailto:#{email}\">#{name}</a>"
   end
+
+  memoize :gravatar_url, :email_link
 end
 
 describe PersonalData do
